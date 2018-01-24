@@ -12,17 +12,46 @@ function newItem() {
   console.log(todos);
 
   $("#todo-list").append(
-    '<li><input class=\'checkbox\' type="checkbox"><p class="todo-item">' +
+    '<li><input class=\'checkbox\' type="checkbox"> <p class="todo-item">' +
       inputValue +
       '</p><i class="fa fa-times close-button" aria-hidden="true"></i></li>'
   );
   $("#entered-item").val("");
 
   // sunucuya todo itemi gonder
+  var todosJson = JSON.stringify(todos);
+  $.ajax({
+    method: "PUT",
+    url: "https://merveyuksekcom-24d2d.firebaseio.com/todos.json",
+    data: todosJson
+  }).done(function(msg) {
+    console.log("Data Saved: " + msg);
+  });
 }
 
 window.onload = function(e) {
   // var olan todo itemlari sunucudan al
+  $.ajax({
+    method: "GET",
+    url: "https://merveyuksekcom-24d2d.firebaseio.com/todos.json"
+  }).done(function(msg) {
+    for (i = 0; i < msg.length; i++) {
+      todos.push(msg[i]);
+      if (msg[i].done == false) {
+        $("#todo-list").append(
+          '<li><input class=\'checkbox\' type="checkbox"><p class="todo-item">' +
+            msg[i].text +
+            '</p><i class="fa fa-times close-button" aria-hidden="true"></i></li>'
+        );
+      } else {
+        $(".item-done").append(
+          '<li class="checked"><input class=\'checkbox\' type="checkbox" checked><p class="todo-item">' +
+            msg[i].text +
+            '</p><i class="fa fa-times close-button" aria-hidden="true"></i></li>'
+        );
+      }
+    }
+  });
 
   $("#entered-item").keypress(function(e) {
     if (e.which == 13) {
@@ -39,6 +68,7 @@ window.onload = function(e) {
           todos[i].done = true;
         }
       }
+      
       //list itemin ustunu ciz
       listItem.addClass("checked");
       //list itemi asagiya tasi
@@ -56,6 +86,14 @@ window.onload = function(e) {
       var detachedItem = listItem.detach();
       detachedItem.appendTo("#todo-list");
     }
+    var todosJson = JSON.stringify(todos);
+    $.ajax({
+      method: "PUT",
+      url: "https://merveyuksekcom-24d2d.firebaseio.com/todos.json",
+      data: todosJson
+    }).done(function(msg) {
+      console.log("checked item saved" + msg);
+    });
   });
 
   //Todo item delete
@@ -68,8 +106,16 @@ window.onload = function(e) {
       .remove();
     for (i = 0; i < todos.length; i++) {
       if (todos[i].text == listItem.text()) {
-        todos.splice(i,1)
+        todos.splice(i, 1);
       }
     }
+    var todosJson = JSON.stringify(todos);
+    $.ajax({
+      method: "PUT",
+      url: "https://merveyuksekcom-24d2d.firebaseio.com/todos.json",
+      data: todosJson
+    }).done(function(msg) {
+      console.log("checked item saved" + msg);
+    });
   });
 };
